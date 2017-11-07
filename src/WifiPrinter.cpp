@@ -10,7 +10,7 @@ WifiPrinter::WifiPrinter():
   _newLine(true),
   _showTime(false)
   {
-    _buffer.reserve(80);
+    _buffer.reserve(200);
   }
 WifiPrinter::WifiPrinter(uint16_t port):
   _wifiServer(port),
@@ -21,7 +21,7 @@ WifiPrinter::WifiPrinter(uint16_t port):
   _newLine(true),
   _showTime(false)
   {
-    _buffer.reserve(80);
+    _buffer.reserve(200);
   }
 
 
@@ -46,7 +46,7 @@ void WifiPrinter::loop() {
       if (_wifiClient) _wifiClient.stop(); //stop second client, only 1 supported
       _wifiClient = _wifiServer.available();
       _wifiClient.flush(); //start with clean sheet
-      showInfo();
+      _showInfo();
       //empty input buffer
       while(_wifiClient.available()) {
         _wifiClient.read();
@@ -62,7 +62,7 @@ void WifiPrinter::loop() {
       if (character == '\n' || character == '\r') {
         //Commands end with <newline> --> handle command
         if (_command.length() > 0) {
-          handle();
+          _handle();
         }
         _command = ""; // Init for next command
       } else if (isPrintable(character)) {
@@ -106,7 +106,6 @@ size_t WifiPrinter::write(uint8_t character) {
 
   // New line ?
   if (character == '\n') {
-    _buffer.concat("\r");
     _newLine = true;
     doPrint = true;
   } else if (_buffer.length() == 100) { // Limit of buffer
@@ -131,32 +130,27 @@ size_t WifiPrinter::write(uint8_t character) {
 ////// Private
 
 // Show help of commands
-void WifiPrinter::showInfo() {
+void WifiPrinter::_showInfo() {
     // Show the initial message
     String help = "";
-    help.concat(F("*** ESP8266 logger ************\r\n"));
-    help.concat(F("* IP:"));
-    help.concat(WiFi.localIP().toString());
-    help.concat(F("\r\n* Mac address:"));
-    help.concat(WiFi.macAddress());
-    help.concat(F("\r\n* Free Heap RAM: "));
-    help.concat(ESP.getFreeHeap());
-    help.concat(F("\r\n*******************************\r\n"));
-    help.concat(F(" * Commands:\r\n"));
-    help.concat(F("    ? or help -> display these help of commands\r\n"));
-    help.concat(F("    t -> display timestamps\r\n"));
-    help.concat(F("    m -> display memory available\r\n"));
-    help.concat(F("    q -> quit (close this connection)\r\n"));
+    help.concat(F("* ESP8266 WifiPrinter\r\n"));
+    help.concat(F("* Commands:\r\n"));
+    help.concat(F("   ? or help -> display these help of commands\r\n"));
+    help.concat(F("   t -> display timestamps\r\n"));
+    help.concat(F("   m -> display memory available\r\n"));
+//    help.concat(F("   i -> display crash info\r\n"));
+//    help.concat(F("   c -> clear crash info\r\n"));
+    help.concat(F("   q -> quit (close this connection)\r\n"));
     if (_resetCommandEnabled) {
-        help.concat(F("    reset -> reset the ESP8266\r\n"));
+        help.concat(F("   reset -> reset the ESP8266\r\n"));
     }
-    help.concat(F("\r\n* Please type the command and press enter to execute.(? or h for this help)\r\n\r\n"));
+    help.concat(F("* Please type the command and press enter to execute. (? or h for this help)\r\n\r\n"));
     _wifiClient.print(help);
 }
 
 
 // Process user command over telnet
-void WifiPrinter::handle() {
+void WifiPrinter::_handle() {
     _wifiClient.print(F("Command received: "));
     _wifiClient.println(_command);
     String options = "";
@@ -167,7 +161,7 @@ void WifiPrinter::handle() {
     // Process the command
     if (_command == "h" || _command == "?") {
         // Show help
-        showInfo();
+        _showInfo();
     } else if (_command == "q") {
         // Quit
         _wifiClient.println(F("Closing telnet connection ..."));
@@ -175,6 +169,14 @@ void WifiPrinter::handle() {
     } else if (_command == "m") {
         _wifiClient.print(F("* Free Heap RAM: "));
         _wifiClient.println(ESP.getFreeHeap());
+/*    } else if (_command == "i") {
+      //display crash info
+      //_wifiClient.println(F("* Display crash info"));
+      SaveCrash.print(_wifiClient);
+    } else if (_command == "c") {
+      //clear crash info
+      SaveCrash.clear();
+      _wifiClient.println(F("* Crash info cleared.")); */
     }  else if (_command == "t") {
         // Show time
         _showTime = !_showTime;

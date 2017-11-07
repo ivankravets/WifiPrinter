@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
+//#include <EspSaveCrash.h>
 
 /*
  *   This library is free software; you can redistribute it and/or
@@ -25,8 +26,7 @@
  */
 
 
-class WifiPrinter: public Print{
-
+class WifiPrinter: public Print {
   public:
     WifiPrinter();
     WifiPrinter(uint16_t port);
@@ -35,19 +35,16 @@ class WifiPrinter: public Print{
     void loop();
     void enableReset(boolean enable);
     boolean isActive();
-
-  	// Print
   	virtual size_t write(uint8_t);
-
   private:
     WiFiServer _wifiServer;
     WiFiClient _wifiClient;
     boolean _connected;
     boolean _resetCommandEnabled;
     String _buffer;
-    String _command;					// Command received
-    boolean _newLine;				// New line write ?
+    String _command;				// Command received
+    boolean _newLine;				// New line write?
     boolean _showTime;				// Show time in millis
-    void showInfo();
-    void handle();
+    void _showInfo();
+    void _handle();
 };
