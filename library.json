@@ -1,10 +1,10 @@
 {
   "name": "WifiPrinter",
-  "version": "1.1.0",
-  "keywords": "esp8266, debug, telnet",
-  "description": "Adds a telnet-like server to your ESP8266 to print debug messages",
+  "version": "0.1.0",
+  "keywords": "esp8266, eps32, debug, websockets, webserver",
+  "description": "Print debug messages on a device-hosted webpage using websockets",
   "homepage": "https://github.com/bertmelis/WifiPrinter",
-  "license": "LGPL",
+  "license": "MITL",
   "authors":
   {
     "name": "Bert Melis",
@@ -12,12 +12,20 @@
     "maintainer": true
   },
   "frameworks": "arduino",
-  "platforms": "espressif8266",
-  "dependencies": [
+  "platforms": [
+    "espressif8266",
+    "espressif32"
   ],
-  "export": {
-    "include": [
-      "keywords.txt"
-    ]
-  }
+  "dependencies": [
+    {
+      "name": "ESP Async WebServer"
+    },
+    {
+      "name": "ArduinoJson"
+    },
+    {
+      "name": "Ticker-esp32",
+      "platforms": "espressif32"
+    }
+  ]
 }

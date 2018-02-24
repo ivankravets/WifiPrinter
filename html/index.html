@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>esp status page</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/w3.css">
+<style>
+  #terminal {
+    border-left: none;
+    background-color: #000;
+    color: #949494;
+    line-height: 1.5;
+    height: 40ex;
+    overflow-y: scroll;
+    overflow-x: auto;
+  }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script type="text/javascript">
+  function openTab(tab) {
+    var i;
+    // hide all tabs
+    var ell = document.getElementsByClassName("tab");
+    for (i = 0; i < ell.length; i++) {
+      ell[i].style.display = "none"; 
+    }
+    // show only selected tab
+    var elementId = "tab-" + tab;
+    document.getElementById(elementId).style.display = "block";
+
+    // remove color from all nav elements
+    var el = document.getElementsByClassName("nav");
+    var className = "w3-teal";
+    for (i = 0; i < el.length; i++) {
+      if (el.classList)
+        el[i].lassList.remove(className);
+      else
+      el[i].className = el[i].className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+    }
+    // add color to active nav element
+    var elementId = "nav-" + tab;
+    if (document.getElementById(elementId).classList)
+      document.getElementById(elementId).classList.add(className);
+    else
+      document.getElementById(elementId).className += ' ' + className;
+  }
+
+  function clearTerminal() {
+    document.getElementById("terminal").innerHTML = "";
+  }
+
+  var autoScroll = true;
+  function toggleAutoScroll() {
+    var checked = document.getElementById("autoscroll").checked;
+    if (checked) {
+      autoScroll = true;
+      var el = document.getElementById("terminal");
+      el.scrollTop = el.scrollHeight;
+    } else {
+      autoScroll = false;
+    }
+  }
+
+  function load() {
+    if ("WebSocket" in window) {
+      var ws = new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + "/ws");
+			ws.onopen = function() {
+        document.getElementById("wsStatus").innerHTML = "<i class=\"fa fa-refresh w3-spin\"></i>";
+      };
+			ws.onmessage = function(message) {
+        try {
+          var json = JSON.parse(message.data);
+          if (json.hasOwnProperty("message")) {
+            var el = document.getElementById("terminal");
+            json["message"] = json["message"].replace(/(?:\r\n|\r|\n)/g, '<br />');
+            el.innerHTML += json["message"];
+            if (autoScroll)
+              el.scrollTop = el.scrollHeight;
+          }
+          if (json.hasOwnProperty("freeHeap")) {
+            document.getElementById("freeHeap").innerHTML = json["freeHeap"];
+          }
+          if (json.hasOwnProperty("uptime")) {
+            document.getElementById("uptime").innerHTML = json["uptime"];
+          }
+          if (json.hasOwnProperty("sdkVersion")) {
+            document.getElementById("sdkVersion").innerHTML = json["sdkVersion"];
+          }
+          if (json.hasOwnProperty("coreVersion")) {
+            document.getElementById("coreVersion").innerHTML = json["coreVersion"];
+          }
+          if (json.hasOwnProperty("fwVersion")) {
+            document.getElementById("fwVersion").innerHTML = json["fwVersion"];
+          }
+          if (json.hasOwnProperty("wpVersion")) {
+            document.getElementById("wpVersion").innerHTML = json["wpVersion"];
+          }
+        }
+        catch(err) {
+          // no useful message
+        }
+      };
+			ws.onclose = function() { 
+        // websocket is closed.
+        document.getElementById("wsStatus").innerHTML = "<i class=\"fa fa-close\"></i>"; 
+      };
+			window.onbeforeunload = function(event) {
+         socket.close();
+      };
+    } else {
+      // The browser doesn't support WebSocket
+      document.getElementById("terminal").innerHTML = "Your browser doesn't support WebSocket.";
+    }
+  }
+</script>
+</head>
+<body onload="load()">
+  <div class="w3-row">
+    <div class="w3-rest w3-container">
+      <h1>esp status page</h1>
+      <div class="w3-bar w3-light-grey w3-border">
+        <a href="#" id="nav-home" class="nav w3-bar-item w3-button w3-teal" onclick="openTab('home')"><i class="fa fa-home"></i></a>
+        <a href="#" id="nav-status" class="nav w3-bar-item w3-button" onclick="openTab('status')"><i class="fa fa-tachometer"></i></a>
+        <a href="#" id="nav-update" class="nav w3-bar-item w3-button" onclick="openTab('update')"><i class="fa fa-upload"></i></a>
+      </div>
+    </div>
+  </div>
+  <div class="w3-row">
+    <div class="w3-rest w3-container">
+      <!-- Home/terminal -->
+      <div id="tab-home" class="tab">
+        <div class="w3-row">
+          <div class="w3-rest w3-container">
+            <div id="terminal" class="w3-code notranslate">
+            </div>
+          </div>
+        </div>
+        <div class="w3-row">
+          <div class="w3-threequarter w3-container">
+            <label for="autoscroll">auto scroll: </label><input type="checkbox" id="autoscroll" checked onchange="toggleAutoScroll()">
+            <input class="w3-button w3-teal" type="button" value="Clear" onclick="clearTerminal()">
+          </div>
+          <div class="w3-rest w3-container w3-right-align">
+            <div id="wsStatus"><i class="fa fa-close"></i></div>
+          </div>
+        </div>
+      </div>
+      <!-- Status -->
+      <div id="tab-status" class="tab" style="display:none">
+        <p>
+          <ul>
+            <li>Free heap: <span id="freeHeap">n/a</span></li>
+            <li>Uptime: <span id="uptime">n/a</span></li>
+            <li>SDK version: <span id="sdkVersion">n/a</span></li>
+            <li>Core version: <span id="coreVersion">n/a</span></li>
+            <li>Firmware version: <span id="fwVersion">n/a</span></li>
+            <li>WifiPrinter version: <span id="wpVersion">n/a</span></li>
+          </ul>
+        </p> 
+      </div>
+      <!-- Update -->
+      <div id="tab-update" class="tab" style="display:none">
+        <h2>Firmware update</h2>
+        <form method="POST" action="/update" enctype="multipart/form-data" class="w3-container">
+          <input type="file" name="firmware" class="w3-input">
+          <input type="submit" value="Update" class="w3-button w3-teal">
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
