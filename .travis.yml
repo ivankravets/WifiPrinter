@@ -19,4 +19,4 @@ install:
     - pip install -U cpplint
 
 script:
-    - if [[ "$CPPLINT" ]]; then cpplint --repository=. --recursive --linelength=200 --filter=-build/include  ./src; else platformio ci --lib="." --lib_ldf_mode="chain+" $PLATFORMIO_CI_EXTRA_ARGS; fi
+    - if [[ "$CPPLINT" ]]; then cpplint --repository=. --recursive --linelength=200 --filter=-build/include  ./src; else platformio ci --lib="." --project-option="lib_ldf_mode=chain+" $PLATFORMIO_CI_EXTRA_ARGS; fi
