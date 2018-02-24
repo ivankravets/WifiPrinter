@@ -15,7 +15,8 @@ env:
 
 install:
     - pip install -U platformio
+    - platformio lib -g install 306 64 1938
     - pip install -U cpplint
 
 script:
-    - if [[ "$CPPLINT" ]]; then cpplint --repository=. --recursive --linelength=200 --filter=-build/include  ./src; else platformio ci --lib="." $PLATFORMIO_CI_EXTRA_ARGS; fi
+    - if [[ "$CPPLINT" ]]; then cpplint --repository=. --recursive --linelength=200 --filter=-build/include  ./src; else platformio ci --lib="." --lib_ldf_mode="chain+" $PLATFORMIO_CI_EXTRA_ARGS; fi
