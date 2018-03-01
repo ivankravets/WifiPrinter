@@ -12,16 +12,15 @@
     "maintainer": true
   },
   "frameworks": "arduino",
-  "platforms": [
-    "espressif8266",
-    "espressif32"
-  ],
+  "platforms": ["espressif8266", "espressif32"],
   "dependencies": [
     {
-      "name": "ESP Async WebServer"
+      "name": "ESP Async WebServer",
+      "platforms": ["espressif8266", "espressif32"]
     },
     {
-      "name": "ArduinoJson"
+      "name": "ArduinoJson",
+      "platforms": ["espressif8266", "espressif32"]
     },
     {
       "name": "Ticker-esp32",

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP Status</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* Layout */
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    font-family: "Roboto", "Trebuchet MS", Helvetica, sans-serif;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    background-color: #009688;
+    border-top: 10px solid #00796B;
+    -webkit-box-shadow: 0 3px 5px rgba(57, 63, 72, 0.3);
+  -moz-box-shadow: 0 3px 5px rgba(57, 63, 72, 0.3);
+  box-shadow: 0 3px 5px rgba(57, 63, 72, 0.3);
+  }
+  nav {
+    margin-left: auto;
+  }
+  #wsStatus {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+  }
+  h1 {
+    color: #FFFFFF;
+    font-weight: 100;
+    margin: 0;
+  }
+  @media (max-width: 767px) {                  
+   h1 {
+      display: none;
+   }
+  }
+  header span {
+    margin-right: 10px;
+  }
+  nav a {
+    color: #FFFFFF;
+    text-decoration: none;
+    margin: 0 10px;
+  }
+  a svg #pprinter,
+  a svg #pstats,
+  a svg #pupdate {
+    transition: 200ms;
+    transition-timing-function: ease-in-out;
+    -webkit-transition: 200ms;
+    -webkit-transition-timing-function: ease-in-out;
+  }
+  a svg:hover #pprinter,
+  a svg:hover #pstats,
+  a svg:hover #pupdate {
+    fill: #e1e2e1;
+  }
+  header,
+  main {
+    padding: 20px;
+  }
+  #printer {
+    font-family: "Courier New", Courier, monospace;
+    background-color: #000;
+    color: #949494;
+    line-height: 1.5;
+    height: 60ex;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding: 10px;
+    resize: horizontal;
+    white-space: pre-wrap;       /* css-3 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  }
+  table {
+    border: 2px solid lightgrey;
+    border-collapse: collapse;
+    white-space: nowrap;
+    text-align: left;
+    width: 80%;
+  }
+  thead {
+    padding: 20px;
+  }
+  tr {
+    border-top: 1px solid lightgrey;
+  }
+  tr>:first-child {
+    padding-right: 40px;
+  }
+  th, td {
+    padding: 15px 30px;
+  }
+  .spinner {
+    -webkit-animation-name: spin;
+    -webkit-animation-duration: 4000ms;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+    -moz-animation-name: spin;
+    -moz-animation-duration: 4000ms;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-timing-function: linear;
+    -ms-animation-name: spin;
+    -ms-animation-duration: 4000ms;
+    -ms-animation-iteration-count: infinite;
+    -ms-animation-timing-function: linear;
+    
+    animation-name: spin;
+    animation-duration: 4000ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+@-ms-keyframes spin {
+    from { -ms-transform: rotate(0deg); }
+    to { -ms-transform: rotate(360deg); }
+}
+@-moz-keyframes spin {
+    from { -moz-transform: rotate(0deg); }
+    to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(360deg);
+    }
+}
+</style>
+<script type="text/javascript">
+  function openTab(tab) {
+    var i;
+    // hide all tabs
+    var ell = document.getElementsByClassName('tab');
+    for (i = 0; i < ell.length; i++) {
+      ell[i].style.display = 'none'; 
+    }
+    // show only selected tab
+    var elementId = 'tab-' + tab;
+    document.getElementById(elementId).style.display = 'block';
+  }
+
+  function clearTerminal() {
+    document.getElementById('printer').innerHTML = '';
+  }
+
+  var autoScroll = true;
+  function toggleAutoScroll() {
+    var checked = document.getElementById('autoscroll').checked;
+    if (checked) {
+      autoScroll = true;
+      var el = document.getElementById('printer');
+      el.scrollTop = el.scrollHeight;
+    } else {
+      autoScroll = false;
+    }
+  }
+
+  function load() {
+    if ('WebSocket' in window) {
+      var ws = new WebSocket(((window.location.protocol === 'https:') ? 'wss://' : 'ws://') + window.location.host + '/ws');
+			ws.onopen = function() {
+        document.getElementById('wsStatus').innerHTML = '<svg class="spinner" version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M27.802 5.197c-2.925-3.194-7.13-5.197-11.803-5.197-8.837 0-16 7.163-16 16h3c0-7.18 5.82-13 13-13 3.844 0 7.298 1.669 9.678 4.322l-4.678 4.678h11v-11l-4.198 4.197z" fill="#808080"></path><path d="M29 16c0 7.18-5.82 13-13 13-3.844 0-7.298-1.669-9.678-4.322l4.678-4.678h-11v11l4.197-4.197c2.925 3.194 7.13 5.197 11.803 5.197 8.837 0 16-7.163 16-16h-3z" fill="#808080"></path></svg>';
+      };
+			ws.onmessage = function(message) {
+        try {
+          var json = JSON.parse(message.data);
+          if (json.hasOwnProperty('message')) {
+            var el = document.getElementById('printer');
+            //json["message"] = json["message"].replace(/(?:\r\n|\r|\n)/g, '<br />');
+            el.innerHTML += json['message'];
+            if (autoScroll)
+              el.scrollTop = el.scrollHeight;
+          }
+          if (json.hasOwnProperty('freeHeap')) {
+            document.getElementById('freeHeap').innerHTML = json['freeHeap'];
+          }
+          if (json.hasOwnProperty('uptime')) {
+            document.getElementById('uptime').innerHTML = json['uptime'];
+          }
+          if (json.hasOwnProperty('avgLoop')) {
+            document.getElementById('avgLoop').innerHTML = json['avgLoop'];
+          }
+          if (json.hasOwnProperty('sdkVersion')) {
+            document.getElementById('sdkVersion').innerHTML = json['sdkVersion'];
+          }
+          if (json.hasOwnProperty('coreVersion')) {
+            document.getElementById('coreVersion').innerHTML = json['coreVersion'];
+          }
+          if (json.hasOwnProperty('fwVersion')) {
+            document.getElementById('fwVersion').innerHTML = json['fwVersion'];
+          }
+          if (json.hasOwnProperty('wpVersion')) {
+            document.getElementById('wpVersion').innerHTML = json['wpVersion'];
+          }
+        }
+        catch(err) {
+          // no useful message
+        }
+      };
+			ws.onclose = function() { 
+        // websocket is closed.
+        document.getElementById('wsStatus').innerHTML = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16 2.899l13.409 26.726h-26.819l13.409-26.726zM16 0c-0.69 0-1.379 0.465-1.903 1.395l-13.659 27.222c-1.046 1.86-0.156 3.383 1.978 3.383h27.166c2.134 0 3.025-1.522 1.978-3.383h0l-13.659-27.222c-0.523-0.93-1.213-1.395-1.903-1.395v0z" fill="#808080"></path><path d="M18 26c0 1.105-0.895 2-2 2s-2-0.895-2-2c0-1.105 0.895-2 2-2s2 0.895 2 2z" fill="#808080"></path><path d="M16 22c-1.105 0-2-0.895-2-2v-6c0-1.105 0.895-2 2-2s2 0.895 2 2v6c0 1.105-0.895 2-2 2z" fill="#808080"></path></svg>'; 
+      };
+			window.onbeforeunload = function(event) {
+         socket.close();
+      };
+    } else {
+      // The browser doesn't support WebSocket
+      document.getElementById('body').innerHTML = '<h1>Your browser does not support WebSocket.</h1>';
+    }
+  }
+</script>
+</head>
+<body onload="load()">
+  <header>
+    <span class="logo">
+      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="40" height="32" viewBox="0 0 40 32">
+        <title>connection</title>
+        <path d="M20 18c3.308 0 6.308 1.346 8.481 3.519l-2.827 2.827c-1.449-1.449-3.449-2.346-5.654-2.346s-4.206 0.897-5.654 2.346l-2.827-2.827c2.173-2.173 5.173-3.519 8.481-3.519zM5.858 15.858c3.777-3.777 8.8-5.858 14.142-5.858s10.365 2.080 14.142 5.858l-2.828 2.828c-3.022-3.022-7.040-4.686-11.314-4.686s-8.292 1.664-11.314 4.686l-2.828-2.828zM30.899 4.201c3.334 1.41 6.329 3.429 8.899 6v0l-2.828 2.828c-4.533-4.533-10.56-7.029-16.971-7.029s-12.438 2.496-16.971 7.029l-2.828-2.828c2.571-2.571 5.565-4.589 8.899-6 3.453-1.461 7.12-2.201 10.899-2.201s7.446 0.741 10.899 2.201zM18 28c0-1.105 0.895-2 2-2s2 0.895 2 2c0 1.105-0.895 2-2 2s-2-0.895-2-2z" fill="#fff"></path>
+      </svg>
+    </span>
+    <h1>ESP Status page</h1>
+    <nav>
+      <a href="#" id="nav-printer" onclick="openTab('printer')">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+          <path id="pprinter" d="M0 2v28h32v-28h-32zM30 28h-28v-24h28v24zM28 6h-24v20h24v-20zM14 16h-2v2h-2v2h-2v-2h2v-2h2v-2h-2v-2h-2v-2h2v2h2v2h2v2zM22 20h-6v-2h6v2z" fill="#fff"></path>
+        </svg>
+      </a>
+      <a href="#" id="nav-staus" onclick="openTab('stats')">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+          <path id="pstats" d="M16 2c8.837 0 16 7.163 16 16 0 6.025-3.331 11.271-8.25 14h-15.499c-4.92-2.729-8.25-7.975-8.25-14 0-8.837 7.163-16 16-16zM25.060 27.060c2.42-2.42 3.753-5.637 3.753-9.060h-2.813v-2h2.657c-0.219-1.406-0.668-2.755-1.33-4h-3.327v-2h2.009c-0.295-0.368-0.611-0.722-0.949-1.060-1.444-1.444-3.173-2.501-5.060-3.119v2.178h-2v-2.658c-0.656-0.102-1.324-0.155-2-0.155s-1.344 0.053-2 0.155v2.658h-2v-2.178c-1.887 0.617-3.615 1.674-5.060 3.119-0.338 0.338-0.654 0.692-0.949 1.060h2.009v2h-3.327c-0.662 1.245-1.111 2.594-1.33 4h2.657v2h-2.813c0 3.422 1.333 6.64 3.753 9.060 0.335 0.335 0.685 0.648 1.049 0.94h6.011l1.143-16h1.714l1.143 16h6.011c0.364-0.292 0.714-0.606 1.049-0.94z" fill="#fff"></path>
+        </svg>
+      </a>
+      <a href="#" id="nav-update" onclick="openTab('update')">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+          <path id="pupdate" d="M15 22h-15v8h30v-8h-15zM28 26h-4v-2h4v2zM7 10l8-8 8 8h-5v10h-6v-10z" fill="#fff"></path>
+        </svg>
+      </a>
+    </nav>
+  </header>
+  <main>
+    <div id="tab-printer" class="tab">
+      <h2>Message printer</h2>
+      <div><pre id="printer"></pre></div>
+      <div>
+        <label for="autoscroll">auto scroll: </label><input type="checkbox" id="autoscroll" checked onchange="toggleAutoScroll()">
+        <input type="button" value="Clear" onclick="clearTerminal()">
+      </div>
+    </div>
+    <div id="tab-stats" class="tab" style="display:none">
+      <h2>Statistics</h2>
+      <table>
+        <thead>
+          <tr><th>key</th><th>value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Free heap (B)</td><td id="freeHeap">n/a</td></tr>
+          <tr><td>Uptime (ms)</td><td id="uptime">n/a</td></tr>
+          <tr><td>Average loop time (µs)</td><td id="avgLoop">n/a</td></tr>
+          <tr><td>SDK version</td><td id="sdkVersion">n/a</td></tr>
+          <tr><td>Core version</td><td id="coreVersion">n/a</td></tr>
+          <tr><td>Firmware version</td><td id="fwVersion">n/a</td></tr>
+          <tr><td>WifiPrinter version</td><td id="wpVersion">n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="tab-update" class="tab" style="display:none">
+        <h2>Firmware update</h2>
+        <form method="POST" action="/update" enctype="multipart/form-data">
+          <input type="file" name="firmware">
+          <input type="submit" value="Update">
+        </form>
+      </div>
+  </main>
+  <div id="wsStatus">
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+      <path d="M16 2.899l13.409 26.726h-26.819l13.409-26.726zM16 0c-0.69 0-1.379 0.465-1.903 1.395l-13.659 27.222c-1.046 1.86-0.156 3.383 1.978 3.383h27.166c2.134 0 3.025-1.522 1.978-3.383h0l-13.659-27.222c-0.523-0.93-1.213-1.395-1.903-1.395v0z" fill="#808080"></path>
+      <path d="M18 26c0 1.105-0.895 2-2 2s-2-0.895-2-2c0-1.105 0.895-2 2-2s2 0.895 2 2z" fill="#808080"></path>
+      <path d="M16 22c-1.105 0-2-0.895-2-2v-6c0-1.105 0.895-2 2-2s2 0.895 2 2v6c0 1.105-0.895 2-2 2z" fill="#808080"></path>
+    </svg>
+  </div>
+</body>
+</html>
