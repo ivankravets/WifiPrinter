@@ -4,12 +4,18 @@
   "keywords": "esp8266, eps32, debug, websockets, webserver",
   "description": "Print debug messages on a device-hosted webpage using websockets",
   "homepage": "https://github.com/bertmelis/WifiPrinter",
-  "license": "MITL",
+  "license": "MIT",
   "authors":
   {
     "name": "Bert Melis",
     "url": "https://github.com/bertmelis",
     "maintainer": true
+  },
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/bertmelis/WifiPrinter.git",
+    "branch": "redesign"
   },
   "frameworks": "arduino",
   "platforms": ["espressif8266", "espressif32"],
