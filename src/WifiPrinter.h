@@ -2,7 +2,7 @@
    License: MIT
 */
 
-#define WP_EXTENDED 0
+#define WP_EXTENDED 1
 
 #pragma once
 #include <functional>
