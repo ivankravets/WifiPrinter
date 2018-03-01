@@ -36,7 +36,6 @@ void loop() {
   static uint32_t lastMillis = 0;
   if (millis() - lastMillis > 10000UL) {
     lastMillis = millis();
-    // send some text on random times
     wifiPrinter.println("Hi there, it's the ESP talking!");
   }
   wifiPrinter.loop();
