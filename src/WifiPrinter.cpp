@@ -145,16 +145,12 @@ size_t WifiPrinter::write(uint8_t str) {
 }
 
 size_t WifiPrinter::write(const uint8_t* buffer, size_t size) {
-  DynamicJsonBuffer jsonBuffer;
-  JsonObject& json = jsonBuffer.createObject();
-  json["message"] = buffer;
-  size_t len = json.measureLength();
-  AsyncWebSocketMessageBuffer* wsBuffer = _ws.makeBuffer(len);
-  if (wsBuffer) {
-    json.printTo(reinterpret_cast<char*>(wsBuffer->get()), len + 1);
-    _ws.textAll(wsBuffer);
-  }
-  return len;
+  char msg[200] = {"\0"};
+  strncpy(msg, sizeof(msg), "{\"message\":\"");
+  strncat(msg, sizeof(msg) - strlen(msg), buffer);
+  strncat((msg, sizeof(msg) - strlen(msg), "\"");
+  _ws.textAll(msg);
+  return strlen(msg);
 }
 
 #if WP_EXTENDED
