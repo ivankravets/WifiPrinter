@@ -26,5 +26,4 @@ For a complete version see the example.
 
 **Warning:** the webserver is completely unprotected. Do not use in public environments!
 
-Developement takes place in the `redesign` branch.
-If you wanted to have the old lib, please visit the [RemoteDebug repo](https://github.com/JoaoLopesF/RemoteDebug) or switch to the (soon to be overwritten) master branch.
+If you wanted to have the old lib, please visit the [RemoteDebug repo](https://github.com/JoaoLopesF/RemoteDebug) or switch to the "archive"-branch.
