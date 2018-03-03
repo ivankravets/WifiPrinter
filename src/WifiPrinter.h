@@ -1,50 +1,65 @@
+/* copyright 2016 Bert Melis
+   License: MIT
+*/
+
+#define WP_EXTENDED 1
+
 #pragma once
+#include <functional>
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-//#include <EspSaveCrash.h>
+#if defined ARDUINO_ARCH_ESP32
+#include <Update.h>
+#if WP_EXTENDED
+#include <ESP32Ticker.h>
+#endif
+#elif defined ARDUINO_ARCH_ESP8266
+#include <Updater.h>
+#if WP_EXTENDED
+#include <Ticker.h>
+#endif
+#else
+#error Platform not supported
+#endif
 
-/*
- *   This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
+#include <ArduinoJson.h>
+#include "html.h"
 
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
+#define _wpVersion "0.1.0"
+#define statsFreq 1
 
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+typedef void (*RebootCb)();
 
- (C) 2015 Rudolf Reuter www.rudiswiki.de/wiki9 --> original work
- (C) 2016 JoaoLopesF https://github.com/JoaoLopesF --> RemoteDebug library
- (C) 2017 Bert Melis https://github.com/bertmelis --> stripped down version
+class WifiPrinter : public Print {
+ public:
+  WifiPrinter();
+  void begin();
+  void stop();
+  void loop();
+  void setRebootCb(RebootCb cb);
+  void setFwVersion(const char* fwVersion) { strncpy(_fwVersion, fwVersion, 11); }
+  virtual size_t write(uint8_t character);
+  virtual size_t write(const uint8_t* buffer, size_t size);
 
+ private:
+  AsyncWebServer _server;
+  AsyncWebSocket _ws;
+  AsyncResponseStream* _response;
+  bool _flagForReboot;
+  RebootCb _rebootCb;  // can be made blocking
+  char _fwVersion[12];
 
- */
-
-
-class WifiPrinter: public Print {
-  public:
-    WifiPrinter();
-    WifiPrinter(uint16_t port);
-    void begin();
-    void stop();
-    void loop();
-    void enableReset(boolean enable);
-    boolean isActive();
-  	virtual size_t write(uint8_t);
-  private:
-    WiFiServer _wifiServer;
-    WiFiClient _wifiClient;
-    boolean _connected;
-    boolean _resetCommandEnabled;
-    String _buffer;
-    String _command;				// Command received
-    boolean _newLine;				// New line write?
-    boolean _showTime;				// Show time in millis
-    void _showInfo();
-    void _handle();
+  void _onEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len);
+  void _onRequest(AsyncWebServerRequest *request);
+  void _handleUpdateRDY(AsyncWebServerRequest *request);
+  void _handleUpdate(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
+#if WP_EXTENDED
+// Exdented version
+  Ticker _timer;
+  bool _updateStats;
+  static void _timerCb(WifiPrinter* wp);
+  uint64_t _loopCounter;
+  uint32_t _lastMicros;
+#endif
 };

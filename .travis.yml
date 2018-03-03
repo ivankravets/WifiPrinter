@@ -9,10 +9,14 @@ cache:
         - "~/.platformio"
 
 env:
-    - PLATFORMIO_CI_SRC=examples/basic-printer/basic-printer.ino
+    - PLATFORMIO_CI_SRC=examples/simplePrinter/simplePrinter.ino PLATFORMIO_CI_EXTRA_ARGS="--board=d1_mini"
+    - PLATFORMIO_CI_SRC=examples/simplePrinter/simplePrinter.ino PLATFORMIO_CI_EXTRA_ARGS="--board=lolin32"
+    - CPPLINT=true
 
 install:
     - pip install -U platformio
+    - platformio lib -g install 306 64 1938
+    - pip install -U cpplint
 
 script:
-    - platformio ci --board=d1_mini --board=esp01_1m --board=esp01 --lib="./src"
+    - if [[ "$CPPLINT" ]]; then cpplint --repository=. --recursive --linelength=200 --filter=-build/include  ./src; else platformio ci --lib="." --project-option="lib_ldf_mode=chain+" $PLATFORMIO_CI_EXTRA_ARGS; fi

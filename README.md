@@ -1,23 +1,30 @@
-# Update --> Redesign!!
-I'm not maintaining the current code as I'm working on a completely new version.
-The new version will be totally different:
-- use the async webserver from @me-no-dev
-- display printed messages via websockets on a status page
-- incorporate an upload form for firmware updates
-- display basis stats like uptime, free heap, firmware version etc...
-This will be more close to my personal needs.
-
-As this was only a slim version of the original version of @JoaoLopesF, which is still actively maintained, you can switch over to that version.
-I will be changing the codebase completely in the coming weeks.
-
 # WifiPrinter
+
 [![Build Status](https://travis-ci.org/bertmelis/WifiPrinter.svg?branch=master)](https://travis-ci.org/bertmelis/WifiPrinter)
 
-Arduino library for ESP8266 to print debug messages on a telnet-like server.
+Arduino library for ESP8266 and ESP32 to print on a device-hosted webpage via websockets.
 
-Adds the ability to use a telnet-like server to print debug messages on when your Serial0 interface is occupied by something else or when you cannot physically reach your device.
+You can also use an "extended mode" (by changing `WP_EXTENDED` to `1` in `WifiPrinter.h`). Then you can also see some basic data like uptime, free heap memory and the average Arduino loop() duration.
 
-## Credits go to
-- (C) 2015 Rudolf Reuter http://www.rudiswiki.de/wiki9 --> original work
-- (C) 2016 JoaoLopesF https://github.com/JoaoLopesF --> RemoteDebug library
-- (C) 2017 Bert Melis https://github.com/bertmelis --> stripped down version
+I only tested the UI in Google Chrome. IE and Edge work but have UI issues.
+
+## Usage
+
+* include the header in your sketch  
+`#include <WifiPrinter.h>`  
+* create an instance of the WifiPrinter (and name it as you like).  
+`WifiPrinter wifiPrinter;`
+* optionally set your firmware version (in `void setup()`)  
+`wifiPrinter.setFirmware("1.5.1");`
+* start the server  
+`wifiPrinter.begin();`
+* print messages like you would do on the Serial interface  
+`wifiPrinter.println("Hello World!");`  
+* don't forget to include to `wifiPrinter.loop()` in your main loop  
+
+For a complete version see the example.
+
+**Warning:** the webserver is completely unprotected. Do not use in public environments!
+
+Developement takes place in the `redesign` branch.
+If you wanted to have the old lib, please visit the [RemoteDebug repo](https://github.com/JoaoLopesF/RemoteDebug) or switch to the (soon to be overwritten) master branch.
