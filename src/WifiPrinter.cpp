@@ -146,9 +146,9 @@ size_t WifiPrinter::write(uint8_t str) {
 
 size_t WifiPrinter::write(const uint8_t* buffer, size_t size) {
   char msg[200] = {"\0"};
-  strncpy(msg, sizeof(msg), "{\"message\":\"");
-  strncat(msg, sizeof(msg) - strlen(msg), buffer);
-  strncat((msg, sizeof(msg) - strlen(msg), "\"");
+  strncpy(msg, "{\"message\":\"", sizeof(msg));
+  strncat(msg, (char*)buffer, sizeof(msg) - strlen(msg));
+  strncat(msg, "\"", sizeof(msg) - strlen(msg));
   _ws.textAll(msg);
   return strlen(msg);
 }
