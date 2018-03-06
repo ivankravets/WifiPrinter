@@ -14,8 +14,7 @@
   "repository":
   {
     "type": "git",
-    "url": "https://github.com/bertmelis/WifiPrinter.git",
-    "branch": "redesign"
+    "url": "https://github.com/bertmelis/WifiPrinter.git"
   },
   "frameworks": "arduino",
   "platforms": ["espressif8266", "espressif32"],
